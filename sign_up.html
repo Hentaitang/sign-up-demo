@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>注册</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            border: 1px solid red;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .form-wrapper {
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+
+        .form-wrapper .row {
+            margin: 10px 0;
+        }
+
+        .form-wrapper .row>label {
+            display: inline-block;
+            min-width: 4em;
+        }
+
+        .form-wrapper .row .error {
+            min-width: 120px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-wrapper">
+        <h1>注册</h1>
+        <form id="formSignUp">
+            <div class="row">
+                <label for="email">邮箱</label>
+                <input type="text" name="email" id="email">
+                <span class="error"></span>  
+            </div>
+            <div class="row">
+                <label for="password">密码</label>
+                <input type="password" name="password" id="password">
+                <span class="error"></span>
+            </div>
+            <div class="row">
+                <label for="password_confirmation">确认密码</label>
+                <input type="password" name="password_confirmation" id="password_confirmation">
+                <span class="error"></span>
+            </div>
+            <input type="submit" value="注册">
+        </form>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        let $form = $('#formSignUp')
+        let hash = {}
+        $form.on('submit', (e)=>{
+            e.preventDefault()
+            $form.find('.error').each((index, error)=>{
+                $(error).text('')
+            })
+            let list = ['email', 'password', 'password_confirmation']
+            list.forEach((name)=>{
+                let value = $form.find(`[name="${name}"]`).val()
+                hash[name] = value
+            })
+            if(hash.email === ''){
+                $form.find('#email').siblings('.error').text('请输入邮箱')
+                return
+            }else if(hash.password === ''){
+                $form.find('#password').siblings('.error').text('请输入密码')
+                return
+            }else if(hash.password_confirmation === ''){
+                $form.find('#password_confirmation').siblings('.error').text('请确认密码')
+                return
+            }else if(hash.password !== hash.password_confirmation){
+                $form.find('#password_confirmation').siblings('.error').text('请重新确认密码')
+                return
+            }
+
+            $.post('/sign_up', hash)
+            .then((response)=>{
+                alert('注册成功')
+                window.location.href = '/sign_in'
+            },(request)=>{
+                let {errors} = request.responseJSON
+                if(errors.email && errors.email === 'invalid'){
+                    $form.find('#email').siblings('.error').text('邮箱格式错误')
+                }else if(errors.email && errors.email === 'used'){
+                    $form.find('#email').siblings('.error').text('该邮箱已被使用')
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>
